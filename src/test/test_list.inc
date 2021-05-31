@@ -2,6 +2,7 @@ IF !DEF(TEST_LIST_INC)
 TEST_LIST_INC SET 1
 
 INCLUDE "sample_test.inc"
+INCLUDE "half_hex_digit_tests.inc"
 
 SECTION "test_directory", ROM0
 test_defs: 
@@ -12,6 +13,7 @@ test_defs:
   ; -------------------------------------------------------------------
   ;     ADD any additional tests below
   ; -------------------------------------------------------------------
+  DW hex_digits_stitch_test_name, hex_digits_stitch_test
 .end:
 
 sizeof_test_defs EQU (test_defs.end - test_defs.begin)
@@ -23,5 +25,6 @@ hello_world_test_name: DB "hello world! test",$0
 ; -------------------------------------------------------------------
 ;     ADD any additional test names below
 ; -------------------------------------------------------------------
+hex_digits_stitch_test_name: DB "Hex digits test (",$FF,")",$0
 
 ENDC ; TEST_LIST_INC
