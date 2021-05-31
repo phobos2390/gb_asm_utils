@@ -6,7 +6,10 @@ TEST_ENGINE_DIR := ./gb_asm_test/src
 TEST_DIRECTORY := ./src/test
 
 build_test:
-	make -f gb_asm_test/Makefile TEST_ENGINE_DIR=$(TEST_ENGINE_DIR) TEST_DIRECTORY=$(TEST_DIRECTORY) TEST_NAME=$(TEST_NAME)
+	make -f gb_asm_test/Makefile build_test \
+	TEST_ENGINE_DIR=$(TEST_ENGINE_DIR) \
+	TEST_DIRECTORY=$(TEST_DIRECTORY) \
+	TEST_NAME=$(TEST_NAME)
 
 clean:
 	rm -rf build/
