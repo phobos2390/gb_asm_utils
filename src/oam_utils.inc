@@ -57,8 +57,10 @@ sprite_table_end:
 
 SECTION "Update sprites", ROM0
 dma_update_sprites:
+  di
   ld a, HIGH(sprite_table)
   call dma_subroutine_hram
+  ei
   ret
 
 SECTION "Init sprite table", ROM0
