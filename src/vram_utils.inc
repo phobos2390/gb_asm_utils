@@ -11,6 +11,15 @@ vram_iterator: DS 2
 SECTION "newline offset", WRAM0
 newline_offset: DS 2
 
+VBLANK_WAIT_INT : MACRO
+  ld a, IEF_VBLANK
+  ld [rIE], a
+  halt
+  halt
+  ld a, IEF_HILO | IEF_SERIAL | IEF_TIMER | IEF_LCDC | IEF_VBLANK
+  ld [rIE], a
+ENDM
+
 VBLANK_WAIT : MACRO
 .waitVBlank\@:
   ld a, [rLY]
