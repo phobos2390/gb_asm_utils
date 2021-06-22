@@ -4,14 +4,15 @@ JOYPAD_EVAL_INC SET 1
 INCLUDE "func_utils.inc"
 
 SECTION "Joypad callback tables", WRAM0
-pad_up_f: DS 2
-pad_down_f: DS 2
-pad_left_f: DS 2
-pad_right_f: DS 2
+button_jump_table:
 button_a_f: DS 2
 button_b_f: DS 2
-button_start_f: DS 2
 button_select_f: DS 2
+button_start_f: DS 2
+pad_right_f: DS 2
+pad_left_f: DS 2
+pad_up_f: DS 2
+pad_down_f: DS 2
 button_data: DS 1
 button_data_prev: DS 1
 held_count: DS 1
@@ -114,113 +115,35 @@ eval_rising_edge:
 
 SECTION "Continue joypad eval", ROM0
 eval_joypad:
-.eval_a:
-  ld b, a
-  and button_a
-  cp $0
-  jp z, .eval_b
+  push hl
+  push af
+    ld hl, button_jump_table
+    cp $0
+    jr z, .end
+    jr .loop_start ; start in the middle
+.loop:
+    inc hl
+    inc hl   ; next callback
+    srl a    ; next flag
+    jr z, .end
+.loop_start:
+    bit 0, a
+    jr z, .loop
+.call_callback:
+    push af
     push hl
-      ld hl, button_a_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .button_a_f_not_defined
-        CALL_HL
-.button_a_f_not_defined:        
+      ld a, [hli]
+      ld h, [hl]
+      ld l, a
+      CALL_HL
     pop hl
-.eval_b:
-  ld a, b
-  and button_b
-  jp z, .eval_select
-    push hl
-      ld hl, button_b_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .button_b_f_not_defined
-        CALL_HL
-.button_b_f_not_defined:
-    pop hl
-.eval_select:
-  ld a, b
-  and button_select
-  jp z, .eval_start
-    push hl
-      ld hl, button_select_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .button_select_f_not_defined
-        CALL_HL
-.button_select_f_not_defined:
-    pop hl
-.eval_start:
-  ld a, b
-  and button_start
-  jp z, .eval_up
-    push hl
-      ld hl, button_start_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .button_start_f_not_defined
-        CALL_HL
-.button_start_f_not_defined:
-    pop hl
-.eval_up:
-  ld a, b
-  and button_up
-  jp z, .eval_down
-    push hl
-      ld hl, pad_up_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .pad_up_f_not_defined
-        CALL_HL
-.pad_up_f_not_defined:
-    pop hl
-.eval_down:
-  ld a, b
-  and button_down
-  jp z, .eval_right
-    push hl
-      ld hl, pad_down_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .pad_down_f_not_defined
-        CALL_HL
-.pad_down_f_not_defined:
-    pop hl
-.eval_right:
-  ld a, b
-  and button_right
-  jp z, .eval_left
-    push hl
-      ld hl, pad_right_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .pad_right_f_not_defined
-        CALL_HL
-.pad_right_f_not_defined:
-    pop hl
-.eval_left:
-  ld a, b
-  and button_left
-  jp z, .eval_end
-    push hl
-      ld hl, pad_left_f
-      call ld_hl_ihl
-      ld a, h
-      or l
-      jp z, .pad_left_f_not_defined
-        CALL_HL
-.pad_left_f_not_defined:
-    pop hl
-.eval_end:
+    pop af
+    jr .loop
+.end:
+  pop af
+  pop hl
   ret
+
 
 SECTION "JOYPAD Read", ROM0
 read_joypad:

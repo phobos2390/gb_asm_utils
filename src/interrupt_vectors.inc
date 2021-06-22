@@ -55,11 +55,11 @@ ENDR
 ; Interrupt Vectors
 ;-------------------------------------------------------------------------------
 
-vblank_int_flag SET $1
-lcd_int_flag    SET $2
-timer_int_flag  SET $4
-serial_int_flag SET $8
-joypad_int_flag SET $10
+timer_int_flag  SET %00000001
+vblank_int_flag SET %00000010
+lcd_int_flag    SET %00000100
+serial_int_flag SET %00001000
+joypad_int_flag SET %00010000
 
 SECTION "VBLANK INTERRUPT", ROM0[$40]
 vblank_vector:
@@ -106,67 +106,29 @@ int_common:
 SECTION "main_loop", ROM0
 main_loop:
   ld a, [callback_flags]
+  ld hl, interrupt_callback_table
   cp $0
-  jp z, .end  
-.timer_check:
-  ld a, [callback_flags]
-  and timer_int_flag
-  cp $0
-  jp z, .vblank_check
-  ld a, [callback_flags]
-  and ~timer_int_flag
+  jr z, .end
+  jr .flag_evaluate
+.next_flag:
+  inc hl
+  inc hl
+  srl a
+.flag_evaluate:
+  bit 0, a
+  jr z, .next_flag
+  push hl
+    ld a, [hli]
+    ld h, [hl]
+    ld l, a
+    CALL_HL
+  pop hl
+  xor a
   ld [callback_flags], a
-  LD_R16_I_ADDR hl, timer_f
-  CALL_HL
-  jp .end
-.vblank_check:
-  ld a, [callback_flags]
-  and vblank_int_flag
-  cp $0
-  jp z, .lcd_check
-  ld a, [callback_flags]
-  and ~vblank_int_flag
-  ld [callback_flags], a
-  LD_R16_I_ADDR hl, vblank_f
-  CALL_HL
-  jp .end
-.lcd_check:
-  ld a, [callback_flags]
-  and lcd_int_flag
-  cp $0
-  jp z, .serial_check
-  ld a, [callback_flags]
-  and ~lcd_int_flag
-  ld [callback_flags], a
-  LD_R16_I_ADDR hl, lcd_f
-  CALL_HL
-  jp .end
-.serial_check:
-  ld a, [callback_flags]
-  and serial_int_flag
-  cp $0
-  jp z, .joypad_check
-  ld a, [callback_flags]
-  and ~serial_int_flag
-  ld [callback_flags], a
-  LD_R16_I_ADDR hl, serial_f
-  CALL_HL
-  jp .end
-.joypad_check:
-  ld a, [callback_flags]
-  and joypad_int_flag
-  cp $0
-  jp z, .end
-  ld a, [callback_flags]
-  and ~joypad_int_flag
-  ld [callback_flags], a
-  LD_R16_I_ADDR hl, joypad_f
-  CALL_HL
-  jp .end
 .end:
   halt
   halt
-  jp main_loop
+  jp main_loop 
 
 SECTION "Null callback", ROM0
 null_cb:
@@ -217,9 +179,10 @@ init_callbacks:
   ret
 
 SECTION "Interrupt_callbacks", WRAM0
+interrupt_callback_table:
+timer_f: DS 2
 vblank_f: DS 2
 lcd_f: DS 2
-timer_f: DS 2
 serial_f: DS 2
 joypad_f: DS 2
 

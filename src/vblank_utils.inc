@@ -20,7 +20,7 @@ vblank_list_entry_size EQU vblank_list_entry.end - vblank_list_entry.begin
 REPT vblank_list_length - 1
   DS vblank_list_entry_size
 ENDR
-DS 0
+DS 1
 vblank_list_end:
 
 SECTION "Vblank init", ROM0
