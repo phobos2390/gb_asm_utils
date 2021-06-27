@@ -41,7 +41,7 @@ reset:
 REPT $150 - $104
     db 0
 ENDR
-
+            
 SECTION "entrypoint", ROM0[$100]
 entrypoint:
   di

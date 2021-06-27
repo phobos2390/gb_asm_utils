@@ -407,10 +407,9 @@ ld_ihl_de:
 SECTION "LD hl [hl]", ROM0
 ; ld hl, [hl]
 ld_hl_ihl:
-  push bc
-    call ld_bc_ihl
-    LD_HL_BC
-  pop bc
+  ld a, [hl+]
+  ld h, [hl]
+  ld l, a
   ret
 
 SECTION "LD [de] [hl]", ROM0

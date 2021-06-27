@@ -2,6 +2,7 @@ IF !DEF(JOYPAD_EVAL_INC)
 JOYPAD_EVAL_INC SET 1
 
 INCLUDE "func_utils.inc"
+INCLUDe "interrupt_vectors.inc"
 
 SECTION "Joypad callback tables", WRAM0
 button_jump_table:
@@ -50,7 +51,7 @@ init_joypad_table:
       ld [held_refresh_rate], a
       ld a, enable_all_held
       ld [held_mask], a
-      ld bc, 0
+      ld bc, null_cb
       ld hl, pad_up_f
       call ld_ihl_bc
       ld hl, pad_down_f
