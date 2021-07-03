@@ -4,6 +4,7 @@ VRAM_UTILS_INC SET 1
 INCLUDE "hardware.inc"
 INCLUDE "register_utils.inc"
 INCLUDE "mem_utils.inc"
+INCLUDE "interrupt_vectors.inc"
 
 SECTION "VRAM iterator", WRAM0
 vram_iterator: DS 2
@@ -12,14 +13,17 @@ SECTION "newline offset", WRAM0
 newline_offset: DS 2
 
 VBLANK_WAIT_INT : MACRO
-  ld a, [rIE]
-  push af
-    ld a, IEF_VBLANK
-    ld [rIE], a
+  push bc
+    ld c, LOW(callback_flags)
+    ldh a, [c]
+    res vblank_int_bit, a
+    ldh [c], a
+.loop\@:
     halt
-    halt
-  pop af
-  ld [rIE], a
+    ldh a, [c]
+    bit vblank_int_bit, a    
+    jp z, .loop\@
+  pop bc
 ENDM
 
 VBLANK_WAIT : MACRO

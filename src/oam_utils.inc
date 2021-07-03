@@ -17,7 +17,7 @@ dma_subroutine_load:
   push bc
     push hl
       ld b, LOW(dma_subroutine_end - dma_subroutine)
-      ld c, LOW(_HRAM) 
+      ld c, LOW(dma_subroutine_hram) 
       ld hl, dma_subroutine
       call memcopy_hram
     pop hl

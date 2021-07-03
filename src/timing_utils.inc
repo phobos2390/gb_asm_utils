@@ -45,54 +45,41 @@ add_timer_table_entry_hl_to_vblank_list:
 
 SECTION "HandLe timer table entry in hl", ROM0
 handle_timer_table_entry_hl:
-  PUSH_BC_DE
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, ticks
-      call ld_bc_ihl
-      inc bc
-      call ld_ihl_bc
-    pop hl
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, ticks_per_invocation
-      call ld_de_ihl
-    pop hl
-    push hl ; bc == de ?
-      LD_HL_BC
-      INV_DE
-      add hl,de
-      ld a, h
-      or l
-      jp nz, .end_pop_hl
-      ld bc,$0      
-    pop hl
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, ticks
-      call ld_ihl_bc
-    pop hl
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, vblank_wait
-      ld a, [hl]
-      cp $0
-      jp nz, .put_into_vblank_list
-    pop hl
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, context
-      LD_BC_HL
-    pop hl
-    push hl
-      ADD_HL_FIELD_OFFSET timer_table_entry, callback_f
-      call ld_hl_ihl
-      CALL_HL
-    pop hl
-    jp .end
-.put_into_vblank_list:
-    pop hl
-    call add_timer_table_entry_hl_to_vblank_list
-    jp .end
-.end_pop_hl:
-    pop hl
+  push hl
+    inc hl   ; hl -> entry.vblank_wait
+    inc hl   ; hl -> LOW(entry.ticks)
+    dec [hl] ; LOW(entry.ticks) -= 1
+    jr nz, .end
+.carry_tick:
+    inc hl   ; hl -> HIGH(entry.ticks)
+    ld a, [hl]
+    or a
+    jr z, .invoke
+    dec [hl] ; HIGH(entry.ticks) -= 1
+    jr z, .invoke
+    jr .end
+.invoke:
+.reset_ticks:
+    inc hl     ; hl -> LOW(entry.ticks_per_invokation)
+    push bc
+      LD_BC_HL ; bc & hl -> LOW(entry.ticks_per_invocation)
+      DEC_BC_W ; bc -> LOW(entry.ticks)
+      call ld_ibc_ihl ; ld16.w [entry.ticks], [entry.ticks_per_invocation]
+.grab_callback_function_context:
+      inc hl     ; hl -> HIGH(entry.ticks_per_invocation)
+      inc hl     ; hl -> LOW(entry.callback_f)
+      push hl
+        inc hl   ; hl -> HIGH(entry.callback_f)
+        inc hl   ; hl -> LOW(entry.context)
+        call ld_bc_ihl ; bc = entry.context
+      pop hl
+.invoke_callback_funciton:
+      call ld_hl_ihl ; hl = *hl  hl = entry.callback_f
+      ; (*entry.callback_f)(entry.context)
+      CALL_HL    ; rst 8
+    pop bc
 .end:
-  POP_BC_DE
+  pop hl
   ret
 
 SECTION "Timing table callback", ROM0
@@ -141,7 +128,9 @@ add_timing_table_entry_callback:
     ld [hl+], a ; timer_table_entry.entry = 1
     xor a
     ld [hl+], a ; timer_table_entry.vblank zeroed
+    ld a, e
     ld [hl+], a ; timer_table_entry.ticks lower
+    ld a, d
     ld [hl+], a ; timer_table_entry.ticks higher
     call ld_ihl_de ; timer_table_entry.ticks_per_invocation
     LD_DE_HL

@@ -5,6 +5,7 @@ RAM_SIZE := 0x2
 TEST_ENGINE_DIR := ./gb_asm_test/src
 TEST_DIRECTORY := ./src/test
 ADDITIONAL_INCLUDES := "-i ./src"
+DEBUGGER := sameboy_debugger
 
 build_test:
 	make -f gb_asm_test/Makefile build_test \
@@ -17,7 +18,7 @@ clean:
 	rm -rf build/
 
 test: build_test
-	sameboy_debugger build/$(TEST_NAME).gb
+	$(DEBUGGER) build/$(TEST_NAME).gb
 
 all: build_test
 

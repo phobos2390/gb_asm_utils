@@ -55,11 +55,17 @@ ENDR
 ; Interrupt Vectors
 ;-------------------------------------------------------------------------------
 
-timer_int_flag  SET %00000001
-vblank_int_flag SET %00000010
+vblank_int_flag SET %00000001
+timer_int_flag  SET %00000010
 lcd_int_flag    SET %00000100
 serial_int_flag SET %00001000
 joypad_int_flag SET %00010000
+
+vblank_int_bit SET 1
+timer_int_bit  SET 2
+lcd_int_bit    SET 3
+serial_int_bit SET 4
+joypad_int_bit SET 5
 
 SECTION "VBLANK INTERRUPT", ROM0[$40]
 vblank_vector:
@@ -127,7 +133,6 @@ main_loop:
   ld [callback_flags], a
 .end:
   halt
-  halt
   jp main_loop 
 
 SECTION "Null callback", ROM0
@@ -178,15 +183,15 @@ init_callbacks:
   pop bc
   ret
 
-SECTION "Interrupt_callbacks", WRAM0
+SECTION "Interrupt_callbacks", HRAM
 interrupt_callback_table:
-timer_f: DS 2
 vblank_f: DS 2
+timer_f: DS 2
 lcd_f: DS 2
 serial_f: DS 2
 joypad_f: DS 2
 
-SECTION "Callback Flags", WRAM0
+SECTION "Callback Flags", HRAM
 callback_flags: DS 1
               
 SECTION "Callback Stats", WRAM0

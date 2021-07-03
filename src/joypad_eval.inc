@@ -4,7 +4,7 @@ JOYPAD_EVAL_INC SET 1
 INCLUDE "func_utils.inc"
 INCLUDe "interrupt_vectors.inc"
 
-SECTION "Joypad callback tables", WRAM0
+SECTION "Joypad callback tables", HRAM
 button_jump_table:
 button_a_f: DS 2
 button_b_f: DS 2
@@ -46,7 +46,7 @@ SECTION "joypad table initialize", ROM0
 init_joypad_table:
   push bc
     push hl
-      ld a, $3
+      ld a, $A
       ld [held_count], a
       ld [held_refresh_rate], a
       ld a, enable_all_held
